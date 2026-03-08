@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ChevronRight, Music, Video, Gift } from 'lucide-react'
 
 // Dummy steps
-const STEPS = ['Příležitost', 'Příběh a Detaily', 'Hudební Žánr', 'Doplňky', 'Shrnutí']
+const STEPS = ['Příležitost', 'Příběh a Detaily', 'Hudební Žánr', 'Doplňky', 'Platba', 'Shrnutí']
 
 export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const [currentStep, setCurrentStep] = useState(0)
@@ -12,6 +12,8 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
     const [selectedAddons, setSelectedAddons] = useState<string[]>([])
     const [dedication, setDedication] = useState('')
+    const [selectedPayment, setSelectedPayment] = useState<string | null>(null)
+    const [isPaid, setIsPaid] = useState(false)
 
     if (!isOpen) return null
 
@@ -218,29 +220,109 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
                                     </div>
                                 )}
                                 {currentStep === 4 && (
-                                    <div className="text-center">
-                                        <Gift size={64} className="text-gradient" style={{ margin: '0 auto 24px auto' }} />
-                                        <h3>Vše je připraveno!</h3>
-                                        <p style={{ color: 'var(--text-muted)', margin: '16px 0 32px 0' }}>Během brzké doby obdržíte kouzelný dárek do emailu.</p>
-                                        <div className="glass-panel" style={{ padding: '24px', textAlign: 'left', marginBottom: '32px' }}>
-                                            <div className="flex justify-between" style={{ marginBottom: '12px' }}>
-                                                <span>{orderType === 'song' ? 'Základní Píseň' : 'Píseň + Animovaný klip'}</span>
-                                                <span>{orderType === 'song' ? 490 : 780} Kč</span>
-                                            </div>
-                                            {selectedAddons.includes('express') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ Expresní doručení</span> <span>190 Kč</span></div>}
-                                            {selectedAddons.includes('pdf') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ PDF Certifikát</span> <span>90 Kč</span></div>}
-                                            {selectedAddons.includes('mastering') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ Extra Master & Mix</span> <span>150 Kč</span></div>}
-                                            <hr style={{ border: 'none', borderTop: '1px solid var(--glass-border)', margin: '16px 0' }} />
-                                            <div className="flex justify-between" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-                                                <span>Celkem</span>
-                                                <span className="text-gradient">
-                                                    {(orderType === 'song' ? 490 : 780) +
-                                                        (selectedAddons.includes('express') ? 190 : 0) +
-                                                        (selectedAddons.includes('pdf') ? 90 : 0) +
-                                                        (selectedAddons.includes('mastering') ? 150 : 0)} Kč
-                                                </span>
-                                            </div>
+                                    <div>
+                                        <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Vyberte si platební metodu, která vám nejvíce vyhovuje.</p>
+                                        <div className="flex flex-col" style={{ gap: '16px' }}>
+                                            {[
+                                                { id: 'card', name: 'Platební karta (GoPay)', icon: '💳', extra: 'Okamžitá platba přes zabezpečenou bránu' },
+                                                { id: 'gpay', name: 'Google Pay', icon: '📱', extra: 'Rychlé placení z vašeho Androidu' },
+                                                { id: 'apple', name: 'Apple Pay', icon: '🍎', extra: 'Bezpečné placení pro uživatele Apple' },
+                                                { id: 'paypal', name: 'PayPal', icon: '🅿️', extra: 'Platba přes váš celosvětový PayPal účet' },
+                                                { id: 'qr', name: 'QR kód / Převod', icon: '🏦', extra: 'Zobrazíme QR kód pro okamžitý bankovní převod' }
+                                            ].map(p => (
+                                                <div
+                                                    key={p.id}
+                                                    onClick={() => setSelectedPayment(p.id)}
+                                                    className="glass-panel flex items-center justify-between"
+                                                    style={{
+                                                        padding: '20px',
+                                                        cursor: 'pointer',
+                                                        border: selectedPayment === p.id ? '2px solid var(--primary-light)' : '1px solid var(--glass-border)',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                >
+                                                    <div className="flex items-center" style={{ gap: '20px' }}>
+                                                        <span style={{ fontSize: '1.5rem' }}>{p.icon}</span>
+                                                        <div>
+                                                            <h5 style={{ fontSize: '1.1rem', marginBottom: '2px' }}>{p.name}</h5>
+                                                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.extra}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{
+                                                        width: '20px',
+                                                        height: '20px',
+                                                        borderRadius: '50%',
+                                                        border: '2px solid var(--glass-border)',
+                                                        background: selectedPayment === p.id ? 'var(--primary-light)' : 'transparent',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        {selectedPayment === p.id && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
+                                    </div>
+                                )}
+                                {currentStep === 5 && (
+                                    <div className="text-center">
+                                        {isPaid ? (
+                                            <motion.div
+                                                initial={{ scale: 0.8, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                            >
+                                                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+                                                    <CheckCircle2 size={40} color="white" />
+                                                </div>
+                                                <h3 style={{ fontSize: '1.75rem', marginBottom: '16px' }}>Platba proběhla úspěšně!</h3>
+                                                <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Vaše objednávka se již zpracovává. Brzy se ozveme.</p>
+                                                <button className="btn btn-primary" onClick={onClose}>Zavřít</button>
+                                            </motion.div>
+                                        ) : (
+                                            <>
+                                                <Gift size={64} className="text-gradient" style={{ margin: '0 auto 24px auto' }} />
+                                                <h3>Poslední krok k vašemu dárku!</h3>
+                                                <p style={{ color: 'var(--text-muted)', margin: '16px 0 32px 0' }}>Během brzké doby obdržíte kouzelný dárek do emailu.</p>
+                                                <div className="glass-panel" style={{ padding: '24px', textAlign: 'left', marginBottom: '32px' }}>
+                                                    <div className="flex justify-between" style={{ marginBottom: '12px' }}>
+                                                        <span>{orderType === 'song' ? 'Základní Píseň' : 'Píseň + Animovaný klip'}</span>
+                                                        <span>{orderType === 'song' ? 490 : 780} Kč</span>
+                                                    </div>
+                                                    {selectedAddons.includes('express') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ Expresní doručení</span> <span>190 Kč</span></div>}
+                                                    {selectedAddons.includes('pdf') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ PDF Certifikát</span> <span>90 Kč</span></div>}
+                                                    {selectedAddons.includes('mastering') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ Extra Master & Mix</span> <span>150 Kč</span></div>}
+                                                    <hr style={{ border: 'none', borderTop: '1px solid var(--glass-border)', margin: '16px 0' }} />
+                                                    <div className="flex justify-between" style={{ marginBottom: '16px' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>Platební metoda</span>
+                                                        <span style={{ fontWeight: 600 }}>{selectedPayment === 'card' ? 'Karta' : selectedPayment === 'gpay' ? 'GPay' : selectedPayment === 'apple' ? 'Apple Pay' : selectedPayment === 'paypal' ? 'PayPal' : 'QR kód'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+                                                        <span>Celkem</span>
+                                                        <span className="text-gradient">
+                                                            {(orderType === 'song' ? 490 : 780) +
+                                                                (selectedAddons.includes('express') ? 190 : 0) +
+                                                                (selectedAddons.includes('pdf') ? 90 : 0) +
+                                                                (selectedAddons.includes('mastering') ? 150 : 0)} Kč
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {selectedPayment === 'qr' && (
+                                                    <div className="glass-panel" style={{ padding: '20px', background: 'white', display: 'inline-block', marginBottom: '32px' }}>
+                                                        <div style={{ width: '150px', height: '150px', border: '5px solid black', position: 'relative' }}>
+                                                            {/* Stylized QR placeholder */}
+                                                            <div style={{ position: 'absolute', top: '10px', left: '10px', width: '30px', height: '30px', border: '5px solid black' }} />
+                                                            <div style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', border: '5px solid black' }} />
+                                                            <div style={{ position: 'absolute', bottom: '10px', left: '10px', width: '30px', height: '30px', border: '5px solid black' }} />
+                                                            <div style={{ position: 'absolute', top: '50px', left: '50px', width: '50px', height: '50px', background: 'black', opacity: 0.1 }} />
+                                                            <div style={{ position: 'absolute', top: '20px', left: '60px', width: '20px', height: '5px', background: 'black' }} />
+                                                            <div style={{ position: 'absolute', top: '80px', left: '20px', width: '100px', height: '5px', background: 'black' }} />
+                                                        </div>
+                                                        <p style={{ color: 'black', fontSize: '0.75rem', fontWeight: 700, marginTop: '8px' }}>QR PLATBA</p>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </motion.div>
@@ -251,7 +333,11 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
                         <button className="btn btn-outline" onClick={prevStep} style={{ opacity: currentStep === 0 ? 0 : 1, pointerEvents: currentStep === 0 ? 'none' : 'auto' }}>
                             Zpět
                         </button>
-                        <button className="btn btn-primary" onClick={nextStep}>
+                        <button
+                            className="btn btn-primary"
+                            onClick={currentStep === STEPS.length - 1 ? () => setIsPaid(true) : nextStep}
+                            disabled={currentStep === 4 && !selectedPayment}
+                        >
                             {currentStep === STEPS.length - 1 ? 'Zaplatit a Odeslat' : 'Další krok'} <ChevronRight size={18} />
                         </button>
                     </div>
