@@ -90,7 +90,7 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
                                         <div style={{ marginTop: '32px' }}>
                                             <h4 style={{ marginBottom: '16px' }}>Příležitost</h4>
                                             <div className="flex flex-wrap" style={{ gap: '12px' }}>
-                                                {['Narozeniny', 'Dětská párty', 'Svatba', 'Výročí', 'Ukolébavka'].map(o => (
+                                                {['Narozeniny', 'Dětská párty', 'Svatba', 'Výročí', 'Ukolébavka', 'Jiné'].map(o => (
                                                     <button
                                                         key={o}
                                                         onClick={() => setSelectedOccasion(o)}
