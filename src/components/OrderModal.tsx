@@ -11,6 +11,7 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
     const [selectedOccasion, setSelectedOccasion] = useState<string | null>(null)
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
     const [selectedAddons, setSelectedAddons] = useState<string[]>([])
+    const [dedication, setDedication] = useState('')
 
     if (!isOpen) return null
 
@@ -152,46 +153,65 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
                                         <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Vylaďte svůj dárek k dokonalosti.</p>
                                         <div className="flex flex-col" style={{ gap: '16px' }}>
                                             {[
-                                                { id: 'express', name: 'Expresní doručení (do 12h)', price: 190, desc: 'Dostanete píseň ještě dnes.' },
-                                                { id: 'pdf', name: 'Certifikát s věnováním (PDF)', price: 90, desc: 'Krásně zpracovaný dokument připravený k tisku.' },
-                                                { id: 'mastering', name: 'Extra Master & Mix', price: 150, desc: 'Prémiová kvalita zvuku od studiového inženýra.' }
+                                                { id: 'express', name: 'Expresní doručení (do 12h)', price: 190, desc: 'Dostanete píseň ještě dnes. Ideální pro dárky na poslední chvíli.' },
+                                                { id: 'pdf', name: 'Certifikát s věnováním (PDF)', price: 90, desc: 'Krásně zpracovaný dokument připravený k tisku. Obsahuje QR kód pro spuštění písně a vaše osobní věnování. Skvělý "fyzický" dárek do ruky.' },
+                                                { id: 'mastering', name: 'Extra Master & Mix', price: 150, desc: 'Prémiová kvalita zvuku od studiového inženýra. Čistší vokály a silnější zvuková stopa.' }
                                             ].map(addon => (
-                                                <div
-                                                    key={addon.id}
-                                                    onClick={() => {
-                                                        if (selectedAddons.includes(addon.id)) {
-                                                            setSelectedAddons(prev => prev.filter(a => a !== addon.id))
-                                                        } else {
-                                                            setSelectedAddons(prev => [...prev, addon.id])
-                                                        }
-                                                    }}
-                                                    className="glass-panel flex justify-between items-center"
-                                                    style={{
-                                                        padding: '20px',
-                                                        cursor: 'pointer',
-                                                        border: selectedAddons.includes(addon.id) ? '2px solid var(--accent)' : '1px solid var(--glass-border)',
-                                                        transition: 'all 0.3s ease'
-                                                    }}
-                                                >
-                                                    <div className="flex items-center" style={{ gap: '16px' }}>
-                                                        <div style={{
-                                                            width: '24px',
-                                                            height: '24px',
-                                                            borderRadius: '6px',
-                                                            border: '2px solid var(--glass-border)',
-                                                            background: selectedAddons.includes(addon.id) ? 'var(--accent)' : 'transparent',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center'
-                                                        }}>
-                                                            {selectedAddons.includes(addon.id) && <CheckCircle2 size={16} color="white" />}
+                                                <div key={addon.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                    <div
+                                                        onClick={() => {
+                                                            if (selectedAddons.includes(addon.id)) {
+                                                                setSelectedAddons(prev => prev.filter(a => a !== addon.id))
+                                                            } else {
+                                                                setSelectedAddons(prev => [...prev, addon.id])
+                                                            }
+                                                        }}
+                                                        className="glass-panel flex justify-between items-center"
+                                                        style={{
+                                                            padding: '20px',
+                                                            cursor: 'pointer',
+                                                            border: selectedAddons.includes(addon.id) ? '2px solid var(--accent)' : '1px solid var(--glass-border)',
+                                                            transition: 'all 0.3s ease'
+                                                        }}
+                                                    >
+                                                        <div className="flex items-center" style={{ gap: '16px' }}>
+                                                            <div style={{
+                                                                width: '24px',
+                                                                height: '24px',
+                                                                borderRadius: '6px',
+                                                                border: '2px solid var(--glass-border)',
+                                                                background: selectedAddons.includes(addon.id) ? 'var(--accent)' : 'transparent',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center'
+                                                            }}>
+                                                                {selectedAddons.includes(addon.id) && <CheckCircle2 size={16} color="white" />}
+                                                            </div>
+                                                            <div>
+                                                                <h5 style={{ fontSize: '1rem' }}>{addon.name}</h5>
+                                                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '500px' }}>{addon.desc}</p>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <h5 style={{ fontSize: '1rem' }}>{addon.name}</h5>
-                                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{addon.desc}</p>
-                                                        </div>
+                                                        <span style={{ fontWeight: 600 }}>+{addon.price} Kč</span>
                                                     </div>
-                                                    <span style={{ fontWeight: 600 }}>+{addon.price} Kč</span>
+
+                                                    {addon.id === 'pdf' && selectedAddons.includes('pdf') && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            className="glass-panel"
+                                                            style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', marginTop: '-8px' }}
+                                                        >
+                                                            <label style={{ fontSize: '0.875rem', marginBottom: '8px', display: 'block' }}>Věnování (Text na certifikát):</label>
+                                                            <textarea
+                                                                value={dedication}
+                                                                onChange={(e) => setDedication(e.target.value)}
+                                                                placeholder="Např.: Pro moji drahou babičku k 70. narozeninám. S láskou, tvoje rodina."
+                                                                className="glass-panel w-full"
+                                                                style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid var(--glass-border)', fontSize: '0.875rem', height: '80px', resize: 'none' }}
+                                                            />
+                                                        </motion.div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
