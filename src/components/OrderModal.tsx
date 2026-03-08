@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, ChevronRight, Music, Video, Star, Gift } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Music, Video, Gift } from 'lucide-react'
 
 // Dummy steps
 const STEPS = ['Příležitost', 'Příběh a Detaily', 'Hudební Žánr', 'Doplňky', 'Shrnutí']
@@ -9,6 +9,8 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
     const [currentStep, setCurrentStep] = useState(0)
     const [orderType, setOrderType] = useState('song') // song, video, kids
     const [selectedOccasion, setSelectedOccasion] = useState<string | null>(null)
+    const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+    const [selectedAddons, setSelectedAddons] = useState<string[]>([])
 
     if (!isOpen) return null
 
@@ -114,22 +116,110 @@ export default function OrderModal({ isOpen, onClose }: { isOpen: boolean, onClo
                                         />
                                     </div>
                                 )}
-                                {currentStep > 1 && currentStep < 4 && (
-                                    <div className="flex items-center justify-center flex-col h-full" style={{ opacity: 0.5 }}>
-                                        <Star size={48} className="text-gradient" style={{ marginBottom: '16px' }} />
-                                        <p>Tento krok by obsahoval výběr žánru, hlasu a doplňků (tisk PDF).</p>
+                                {currentStep === 2 && (
+                                    <div>
+                                        <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Vyberte styl, který nejlépe vystihuje váš příběh.</p>
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                                            {[
+                                                { id: 'pop', name: 'Moderní Pop', sub: 'Chytlavé a veselé' },
+                                                { id: 'rock', name: 'Rock / Akustika', sub: 'Energické a živé' },
+                                                { id: 'rap', name: 'Rap / Hip-Hop', sub: 'Vtipné a rytmické' },
+                                                { id: 'folk', name: 'Lidový styl', sub: 'Tradiční a milé' },
+                                                { id: 'lullaby', name: 'Ukolébavka', sub: 'Jemné a uklidňující' },
+                                                { id: 'edm', name: 'EDM / Dance', sub: 'Party a energie' }
+                                            ].map(g => (
+                                                <div
+                                                    key={g.id}
+                                                    onClick={() => setSelectedGenre(g.id)}
+                                                    className="glass-panel"
+                                                    style={{
+                                                        padding: '20px',
+                                                        cursor: 'pointer',
+                                                        border: selectedGenre === g.id ? '2px solid var(--primary-light)' : '1px solid var(--glass-border)',
+                                                        textAlign: 'center',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                >
+                                                    <h5 style={{ fontSize: '1rem', marginBottom: '4px' }}>{g.name}</h5>
+                                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{g.sub}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {currentStep === 3 && (
+                                    <div>
+                                        <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Vylaďte svůj dárek k dokonalosti.</p>
+                                        <div className="flex flex-col" style={{ gap: '16px' }}>
+                                            {[
+                                                { id: 'express', name: 'Expresní doručení (do 12h)', price: 190, desc: 'Dostanete píseň ještě dnes.' },
+                                                { id: 'pdf', name: 'Certifikát s věnováním (PDF)', price: 90, desc: 'Krásně zpracovaný dokument připravený k tisku.' },
+                                                { id: 'mastering', name: 'Extra Master & Mix', price: 150, desc: 'Prémiová kvalita zvuku od studiového inženýra.' }
+                                            ].map(addon => (
+                                                <div
+                                                    key={addon.id}
+                                                    onClick={() => {
+                                                        if (selectedAddons.includes(addon.id)) {
+                                                            setSelectedAddons(prev => prev.filter(a => a !== addon.id))
+                                                        } else {
+                                                            setSelectedAddons(prev => [...prev, addon.id])
+                                                        }
+                                                    }}
+                                                    className="glass-panel flex justify-between items-center"
+                                                    style={{
+                                                        padding: '20px',
+                                                        cursor: 'pointer',
+                                                        border: selectedAddons.includes(addon.id) ? '2px solid var(--accent)' : '1px solid var(--glass-border)',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                >
+                                                    <div className="flex items-center" style={{ gap: '16px' }}>
+                                                        <div style={{
+                                                            width: '24px',
+                                                            height: '24px',
+                                                            borderRadius: '6px',
+                                                            border: '2px solid var(--glass-border)',
+                                                            background: selectedAddons.includes(addon.id) ? 'var(--accent)' : 'transparent',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            {selectedAddons.includes(addon.id) && <CheckCircle2 size={16} color="white" />}
+                                                        </div>
+                                                        <div>
+                                                            <h5 style={{ fontSize: '1rem' }}>{addon.name}</h5>
+                                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{addon.desc}</p>
+                                                        </div>
+                                                    </div>
+                                                    <span style={{ fontWeight: 600 }}>+{addon.price} Kč</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                                 {currentStep === 4 && (
                                     <div className="text-center">
                                         <Gift size={64} className="text-gradient" style={{ margin: '0 auto 24px auto' }} />
                                         <h3>Vše je připraveno!</h3>
-                                        <p style={{ color: 'var(--text-muted)', margin: '16px 0 32px 0' }}>Během 24 hodin obdržíte kouzelný dárek do emailu.</p>
+                                        <p style={{ color: 'var(--text-muted)', margin: '16px 0 32px 0' }}>Během brzké doby obdržíte kouzelný dárek do emailu.</p>
                                         <div className="glass-panel" style={{ padding: '24px', textAlign: 'left', marginBottom: '32px' }}>
-                                            <div className="flex justify-between" style={{ marginBottom: '12px' }}><span>Základní Píseň</span> <span>490 Kč</span></div>
-                                            {orderType === 'video' && <div className="flex justify-between" style={{ color: 'var(--accent)' }}><span>+ Animovaný klip</span> <span>290 Kč</span></div>}
+                                            <div className="flex justify-between" style={{ marginBottom: '12px' }}>
+                                                <span>{orderType === 'song' ? 'Základní Píseň' : 'Píseň + Animovaný klip'}</span>
+                                                <span>{orderType === 'song' ? 490 : 780} Kč</span>
+                                            </div>
+                                            {selectedAddons.includes('express') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ Expresní doručení</span> <span>190 Kč</span></div>}
+                                            {selectedAddons.includes('pdf') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ PDF Certifikát</span> <span>90 Kč</span></div>}
+                                            {selectedAddons.includes('mastering') && <div className="flex justify-between" style={{ marginBottom: '8px', fontSize: '0.875rem' }}><span>+ Extra Master & Mix</span> <span>150 Kč</span></div>}
                                             <hr style={{ border: 'none', borderTop: '1px solid var(--glass-border)', margin: '16px 0' }} />
-                                            <div className="flex justify-between" style={{ fontSize: '1.25rem', fontWeight: 700 }}><span>Celkem</span> <span className="text-gradient">{orderType === 'video' ? '780' : '490'} Kč</span></div>
+                                            <div className="flex justify-between" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+                                                <span>Celkem</span>
+                                                <span className="text-gradient">
+                                                    {(orderType === 'song' ? 490 : 780) +
+                                                        (selectedAddons.includes('express') ? 190 : 0) +
+                                                        (selectedAddons.includes('pdf') ? 90 : 0) +
+                                                        (selectedAddons.includes('mastering') ? 150 : 0)} Kč
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
